@@ -1,0 +1,111 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+
+export default function Signup() {
+  const navigate = useNavigate();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:3000/create-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Бүртгэл амжилтгүй");
+        setLoading(false);
+        return;
+      }
+
+      setSuccess("Бүртгэл амжилттай! Нэвтэрнэ үү.");
+      setTimeout(() => navigate("/login"), 1200);
+    } catch (err) {
+      setError("Сервертэй холбогдож чадсангүй");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-xl">
+        <h1 className="mb-6 text-2xl font-bold text-center">
+          Бүртгүүлэх
+        </h1>
+
+        {error && (
+          <div className="p-3 mb-4 text-red-600 bg-red-100 rounded">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="p-3 mb-4 text-green-600 bg-green-100 rounded">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={submit} className="space-y-4">
+          <div>
+            <label className="block mb-1 text-sm font-medium">
+              Username
+            </label>
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              minLength={3}
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-sm font-medium">
+              Password
+            </label>
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 text-white transition bg-black rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          >
+            {loading ? "Бүртгэж байна..." : "Бүртгүүлэх"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-sm text-center">
+          Аль хэдийн бүртгэлтэй юу?{" "}
+          <Link
+            to="/login"
+            className="font-medium text-black hover:underline"
+          >
+            Нэвтрэх
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
