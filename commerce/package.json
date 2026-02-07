@@ -1,58 +1,17 @@
 {
-  "name": "e-commerce",
+  "name": "commerce-api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "@reduxjs/toolkit": "^2.11.2",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.1",
-    "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.13.2",
-    "bcrypt": "^6.0.0",
-    "cloudinary": "^1.41.3",
-    "cors": "^2.8.5",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "multer": "^2.0.2",
-    "multer-storage-cloudinary": "^4.0.0",
-    "next": "^16.1.6",
-    "pg": "^8.16.3",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "react-redux": "^9.2.0",
-    "react-router-dom": "^7.12.0",
-    "react-scripts": "5.0.1",
-    "redux-persist": "^6.0.0",
-    "web-vitals": "^2.1.4",
-    "zustand": "^5.0.10"
-  },
   "scripts": {
     "dev": "node src/App.js",
     "start": "node src/App.js"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.16.3"
+  }
 }
