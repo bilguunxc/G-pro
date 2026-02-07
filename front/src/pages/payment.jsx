@@ -4,8 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setPaymentPending } from "../store/checkoutSlice";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 export default function Payment() {
   const router = useRouter();

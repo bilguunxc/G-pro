@@ -36,13 +36,10 @@ const rawOrigins = (
 
 const corsOptions = {
   origin(origin, cb) {
-    // Allow server-to-server requests (no Origin) and allowlisted browser Origins.
     if (!origin) return cb(null, true);
     if (rawOrigins.includes(origin)) {
       return cb(null, true);
     }
-    // Don't throw: just omit CORS headers for disallowed Origins.
-    // This keeps reverse-proxied requests working even if they forward an Origin header.
     return cb(null, false);
   },
   credentials: true,
@@ -58,8 +55,6 @@ const corsOptions = {
 };
 
 web.use(cors(corsOptions));
-// Express 5 + path-to-regexp v6 doesn't accept "*" as a path.
-// Use a regex to handle all preflight requests.
 web.options(/.*/, cors(corsOptions));
 web.use(express.json());
 
@@ -197,7 +192,6 @@ web.post("/login", async (req, res) => {
 
     res.json({
       user: { id: user.id, username: user.username },
-      // token is returned for compatibility, but the recommended auth flow is via httpOnly cookie.
       token,
     });
   } catch (err) {

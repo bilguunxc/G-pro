@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Provider,
-  useDispatch,
-  useSelector,
-} from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { useRouter } from "next/router";
 import { NotificationProvider } from "../context/NotificationContext";

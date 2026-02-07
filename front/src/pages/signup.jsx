@@ -3,8 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 export default function Signup() {
   const router = useRouter();

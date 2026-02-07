@@ -4,8 +4,7 @@ import { clearCart } from "../store/cartSlice";
 import { useRouter } from "next/router";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 export default function PaymentPending() {
   const dispatch = useDispatch();

@@ -53,7 +53,6 @@ export default function AddProduct() {
         throw new Error(data.message || "Алдаа гарлаа");
       }
 
-      // Trigger a one-time client refresh so the Home list shows the newly added item immediately.
       router.push("/?refresh=1");
     } catch (err) {
       setError(err.message);

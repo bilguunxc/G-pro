@@ -6,8 +6,7 @@ import { loginSuccess } from "../store/authSlice";
 import { setCartUser } from "../store/cartSlice";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 export default function Login() {
   const dispatch = useDispatch();
