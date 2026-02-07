@@ -5,22 +5,103 @@ import bcrypt from "bcrypt";
 import pool from "./db.js";
 
 const web = express();
-const SECRET = "abaabbaba";
+const PORT = Number(process.env.PORT) || 3000;
+const SECRET =
+  process.env.JWT_SECRET ||
+  "2aba446c149d";
+const AUTH_COOKIE_NAME =
+  process.env.AUTH_COOKIE_NAME || "token";
 
-web.use(cors());
+const COOKIE_SAMESITE = (
+  process.env.COOKIE_SAMESITE || "lax"
+).toLowerCase();
+
+const COOKIE_SECURE = process.env.COOKIE_SECURE
+  ? process.env.COOKIE_SECURE === "true"
+  : process.env.NODE_ENV === "production" ||
+    COOKIE_SAMESITE === "none";
+
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || "";
+const COOKIE_MAX_AGE_MS =
+  Number(process.env.COOKIE_MAX_AGE_MS) ||
+  1000 * 60 * 60; // 1 hour
+
+const rawOrigins = (
+  process.env.CLIENT_ORIGIN ||
+  "http://localhost:3001"
+)
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, cb) {
+    // Allow server-to-server requests (no Origin) and allowlisted browser Origins.
+    if (!origin) return cb(null, true);
+    if (rawOrigins.includes(origin)) {
+      return cb(null, true);
+    }
+    // Don't throw: just omit CORS headers for disallowed Origins.
+    // This keeps reverse-proxied requests working even if they forward an Origin header.
+    return cb(null, false);
+  },
+  credentials: true,
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+web.use(cors(corsOptions));
+// Express 5 + path-to-regexp v6 doesn't accept "*" as a path.
+// Use a regex to handle all preflight requests.
+web.options(/.*/, cors(corsOptions));
 web.use(express.json());
 
 web.get("/", (req, res) => {
   res.send("API running...");
 });
 
-const auth = (req, res, next) => {
-  const header = req.headers.authorization;
-  if (!header) {
-    return res.status(401).json({ message: "Token байхгүй" });
+function getCookieValue(req, name) {
+  const header = req.headers.cookie;
+  if (!header) return null;
+
+  const parts = header.split(";").map((p) => p.trim());
+
+  for (const part of parts) {
+    if (part.startsWith(`${name}=`)) {
+      return decodeURIComponent(
+        part.slice(name.length + 1)
+      );
+    }
   }
 
-  const token = header.split(" ")[1];
+  return null;
+}
+
+const auth = (req, res, next) => {
+  const header =
+    req.headers.authorization || "";
+  const bearer =
+    header.startsWith("Bearer ")
+      ? header.slice("Bearer ".length)
+      : "";
+  const cookieToken = getCookieValue(
+    req,
+    AUTH_COOKIE_NAME
+  );
+  const token = bearer || cookieToken;
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Token байхгүй",
+    });
+  }
 
   try {
     req.user = jwt.verify(token, SECRET);
@@ -29,6 +110,10 @@ const auth = (req, res, next) => {
     res.status(401).json({ message: "Token хүчингүй" });
   }
 };
+
+web.get("/me", auth, (req, res) => {
+  res.json({ user: req.user });
+});
 
 
 web.post("/create-account", async (req, res) => {
@@ -96,13 +181,43 @@ web.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    const cookieOptions = {
+      httpOnly: true,
+      secure: COOKIE_SECURE,
+      sameSite: COOKIE_SAMESITE,
+      path: "/",
+      maxAge: COOKIE_MAX_AGE_MS,
+    };
+
+    if (COOKIE_DOMAIN) {
+      cookieOptions.domain = COOKIE_DOMAIN;
+    }
+
+    res.cookie(AUTH_COOKIE_NAME, token, cookieOptions);
+
     res.json({
       user: { id: user.id, username: user.username },
+      // token is returned for compatibility, but the recommended auth flow is via httpOnly cookie.
       token,
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
+});
+
+web.post("/logout", (req, res) => {
+  const clearOptions = {
+    path: "/",
+    secure: COOKIE_SECURE,
+    sameSite: COOKIE_SAMESITE,
+  };
+
+  if (COOKIE_DOMAIN) {
+    clearOptions.domain = COOKIE_DOMAIN;
+  }
+
+  res.clearCookie(AUTH_COOKIE_NAME, clearOptions);
+  res.json({ message: "Logged out" });
 });
 
 
@@ -344,11 +459,6 @@ web.post("/payment", auth, async (req, res) => {
 
 
 
-
-
-
-
-
-web.listen(3000, () => {
-  console.log("Server running http://localhost:3000");
+web.listen(PORT, () => {
+  console.log(`Server running http://localhost:${PORT}`);
 });

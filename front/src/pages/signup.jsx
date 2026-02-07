@@ -1,8 +1,13 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/router";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "/api";
 
 export default function Signup() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +22,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3000/create-account", {
+      const res = await fetch(`${API_BASE_URL}/create-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -32,7 +37,7 @@ export default function Signup() {
       }
 
       setSuccess("Бүртгэл амжилттай! Нэвтэрнэ үү.");
-      setTimeout(() => navigate("/login"), 1200);
+      setTimeout(() => router.push("/login"), 1200);
     } catch (err) {
       setError("Сервертэй холбогдож чадсангүй");
     } finally {
@@ -99,7 +104,7 @@ export default function Signup() {
         <p className="mt-6 text-sm text-center">
           Аль хэдийн бүртгэлтэй юу?{" "}
           <Link
-            to="/login"
+            href="/login"
             className="font-medium text-black hover:underline"
           >
             Нэвтрэх

@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { loginSuccess } from "../store/authSlice";
 import { setCartUser } from "../store/cartSlice";
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "/api";
+
 export default function Login() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const router = useRouter();
 
-
-  const [form, setForm] = useState({username: "", password: "",});
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,18 +26,24 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3000/login", {
+      const res = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      dispatch(loginSuccess(data));
+      dispatch(loginSuccess({ user: data.user }));
       dispatch(setCartUser(data.user.id));
-      navigate("/");
+
+      const nextPath =
+        typeof router.query.next === "string"
+          ? router.query.next
+          : "/";
+      router.push(nextPath);
     } catch (err) {
       setError(err.message || "Login failed");
     } finally {
@@ -57,8 +70,11 @@ export default function Login() {
             placeholder="Username"
             value={form.username}
             onChange={(e) =>
-              setForm({ ...form, username: e.target.value })
-            }/>
+              setForm({
+                ...form,
+                username: e.target.value,
+              })}
+          />
 
           <input
             type="password"
@@ -66,19 +82,25 @@ export default function Login() {
             placeholder="Password"
             value={form.password}
             onChange={(e) =>
-              setForm({ ...form, password: e.target.value })
-            }/>
+              setForm({
+                ...form,
+                password: e.target.value,
+              })}
+          />
 
           <button
             disabled={loading}
-            className="w-full py-2 text-white bg-black rounded">
+            className="w-full py-2 text-white bg-black rounded"
+          >
             {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
           </button>
         </form>
 
         <p className="mt-4 text-sm text-center">
           Бүртгэлгүй юу?{" "}
-          <Link to="/signup" className="underline"> Бүртгүүлэх </Link>
+          <Link href="/signup" className="underline">
+            Бүртгүүлэх
+          </Link>
         </p>
       </div>
     </div>
