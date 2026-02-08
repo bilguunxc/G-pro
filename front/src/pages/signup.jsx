@@ -8,7 +8,7 @@ const API_BASE_URL =
 export default function Signup() {
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -24,7 +24,7 @@ export default function Signup() {
       const res = await fetch(`${API_BASE_URL}/create-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -66,14 +66,15 @@ export default function Signup() {
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className="block mb-1 text-sm font-medium">
-              Username
+              Email
             </label>
             <input
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              minLength={3}
+              autoComplete="email"
             />
           </div>
 

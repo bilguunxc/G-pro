@@ -113,29 +113,30 @@ web.get("/me", auth, (req, res) => {
 
 web.post("/create-account", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
+    const loginId = String(email || username || "").trim().toLowerCase();
 
-    if (!username || !password) {
+    if (!loginId || !password) {
       return res.status(400).json({ message: "Мэдээлэл дутуу" });
     }
 
 
     const exists = await pool.query(
-      "SELECT id FROM users WHERE username=$1",
-      [username]
+      "SELECT id FROM users WHERE email=$1",
+      [loginId]
     );
 
     if (exists.rows.length > 0) {
       return res.status(400).json({
-        message: "Username аль хэдийн бүртгэгдсэн"
+        message: "Энэ имэйл аль хэдийн бүртгэгдсэн"
       });
     }
 
     const hashed = await bcrypt.hash(password, 10);
 
     await pool.query(
-      "INSERT INTO users (username, password) VALUES ($1, $2)",
-      [username, hashed]
+      "INSERT INTO users (email, password) VALUES ($1, $2)",
+      [loginId, hashed]
     );
 
     res.json({ message: "Account created" });
@@ -148,11 +149,12 @@ web.post("/create-account", async (req, res) => {
 
 web.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
+    const loginId = String(email || username || "").trim().toLowerCase();
 
     const result = await pool.query(
-      "SELECT * FROM users WHERE username=$1",
-      [username]
+      "SELECT * FROM users WHERE email=$1",
+      [loginId]
     );
 
     if (result.rows.length === 0) {
@@ -171,7 +173,7 @@ web.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, email: user.email },
       SECRET,
       { expiresIn: "1h" }
     );
@@ -191,7 +193,7 @@ web.post("/login", async (req, res) => {
     res.cookie(AUTH_COOKIE_NAME, token, cookieOptions);
 
     res.json({
-      user: { id: user.id, username: user.username },
+      user: { id: user.id, email: user.email },
       token,
     });
   } catch (err) {

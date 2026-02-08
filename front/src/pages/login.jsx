@@ -13,7 +13,7 @@ export default function Login() {
   const router = useRouter();
 
   const [form, setForm] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [error, setError] = useState("");
@@ -66,12 +66,14 @@ export default function Login() {
         <form onSubmit={submit} className="space-y-4">
           <input
             className="w-full p-3 border rounded"
-            placeholder="Username"
-            value={form.username}
+            placeholder="Email"
+            type="email"
+            autoComplete="email"
+            value={form.email}
             onChange={(e) =>
               setForm({
                 ...form,
-                username: e.target.value,
+                email: e.target.value,
               })}
           />
 
@@ -79,6 +81,7 @@ export default function Login() {
             type="password"
             className="w-full p-3 border rounded"
             placeholder="Password"
+            autoComplete="current-password"
             value={form.password}
             onChange={(e) =>
               setForm({
