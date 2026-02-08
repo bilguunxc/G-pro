@@ -23,15 +23,20 @@ const cartSlice = createSlice({
         console.warn("Invalid item added to cart:", item);
         return;
       }
+
+      const rawQty = item.qty;
+      const addQty = Number.isFinite(Number(rawQty))
+        ? Math.max(1, Math.floor(Number(rawQty)))
+        : 1;
     
       const existing = state.items.find(
         (i) => i.id === item.id
       );
     
       if (existing) {
-        existing.qty += 1;
+        existing.qty += addQty;
       } else {
-        state.items.push({ ...item, qty: 1 });
+        state.items.push({ ...item, qty: addQty });
       }
     },
     

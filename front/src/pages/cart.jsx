@@ -1,26 +1,40 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import {removeFromCart, increaseQty,decreaseQty,} from "../store/cartSlice";
+import {
+  removeFromCart,
+  increaseQty,
+  decreaseQty,
+} from "../store/cartSlice";
+import { setCheckoutItems } from "../store/checkoutSlice";
 
 export default function Cart() {
   const router = useRouter();
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart.items);
 
-  const totalPrice = cart.reduce(
-    (sum, p) => sum + p.price * p.qty, 0);
+  const totalPrice = cart.reduce((sum, item) => {
+    const price = Number(item.price) || 0;
+    const qty = Number(item.qty) || 0;
+    return sum + price * qty;
+  }, 0);
 
   const handleCheckout = () => {
     if (cart.length === 0) {
       alert("Сагс хоосон байна");
       return;
     }
+    dispatch(
+      setCheckoutItems({
+        items: cart,
+        source: "cart",
+      })
+    );
     router.push("/payment");
   };
 
   return (
-    <div className="flex justify-center min-h-screen p-6 bg-gray-100">
-      <div className="w-full max-w-3xl p-8 space-y-4 bg-white shadow rounded-xl">
+    <div className="flex justify-center min-h-screen p-4 sm:p-6">
+      <div className="card w-full max-w-3xl space-y-4 p-6 sm:p-8">
         <h1 className="text-xl font-bold text-center">
           Сагс
         </h1>
@@ -40,6 +54,14 @@ export default function Cart() {
                   <p className="text-base font-semibold truncate">
                     {p.name}
                   </p>
+                  {p.store_name && (
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      Дэлгүүр:{" "}
+                      <span className="font-medium text-gray-700">
+                        {p.store_name}
+                      </span>
+                    </p>
+                  )}
                   <p className="text-sm text-gray-600">
                     {Number(p.price).toLocaleString()} ₮ × {p.qty}
                   </p>
@@ -51,7 +73,7 @@ export default function Cart() {
                       disabled={p.qty === 1}
                       onClick={() =>
                         dispatch(decreaseQty(p.id))}
-                      className="px-3 py-2 transition border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+                      className="btn btn-secondary px-3 py-2 disabled:opacity-40"
                     >
                       -
                     </button>
@@ -63,7 +85,7 @@ export default function Cart() {
                     <button
                       onClick={() =>
                         dispatch(increaseQty(p.id))}
-                      className="px-3 py-2 transition border rounded-lg hover:bg-gray-50"
+                      className="btn btn-secondary px-3 py-2"
                     >
                       +
                     </button>
@@ -72,9 +94,9 @@ export default function Cart() {
                   <button
                     onClick={() =>
                       dispatch(removeFromCart(p.id))}
-                    className="px-3 py-2 text-white transition bg-red-600 rounded-lg hover:bg-red-700"
+                    className="btn btn-danger px-3 py-2"
                   >
-                    Remove
+                    Устгах
                   </button>
                 </div>
               </div>
@@ -91,7 +113,7 @@ export default function Cart() {
 
               <button
                 onClick={handleCheckout}
-                className="w-full py-3 text-white transition bg-black rounded-xl hover:bg-gray-800"
+                className="btn btn-primary w-full py-3"
               >
                 Худалдан авах
               </button>
@@ -101,7 +123,7 @@ export default function Cart() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="w-full py-3 transition bg-gray-200 rounded-xl hover:bg-gray-300"
+            className="btn btn-secondary w-full py-3"
           >
             Дэлгүүр рүү
           </button>

@@ -93,7 +93,16 @@ function AuthGate({ children }) {
   }, [dispatch, isAuthenticated, isPublicRoute, router]);
 
   if (isPublicRoute) return children;
-  if (checkingSession) return null;
+  if (checkingSession) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4 sm:p-6">
+        <div className="card w-full max-w-md p-6 text-center sm:p-8">
+          <p className="text-gray-600">Ачаалж байна...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) return null;
   return children;
 }

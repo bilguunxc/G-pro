@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import { addToCart, clearCart, resetCart } from "../store/cartSlice";
+import { addToCart, resetCart } from "../store/cartSlice";
 import { logout } from "../store/authSlice";
+import { setCheckoutItems } from "../store/checkoutSlice";
 
-const CLIENT_API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
-const BASE_URL = `${CLIENT_API_BASE_URL}/products`;
+const PRODUCTS_URL = `${API_BASE_URL}/products`;
 
 export default function Home({
   initialProducts = [],
@@ -37,7 +36,7 @@ export default function Home({
     (async () => {
       try {
         setError("");
-        const res = await fetch(BASE_URL, {
+        const res = await fetch(PRODUCTS_URL, {
           signal: ac.signal,
         });
         const data = await res.json();
@@ -61,21 +60,29 @@ export default function Home({
   const deleteProduct = async (id) => {
     if (!window.confirm("Барааг устгах уу?")) return;
 
-    await fetch(`${BASE_URL}/${id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+    try {
+      const res = await fetch(`${PRODUCTS_URL}/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
-    setProducts((prev) =>
-      prev.filter((p) => p.id !== id)
-    );
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Устгах үед алдаа гарлаа");
+      }
+
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    } catch (err) {
+      setError(err?.message || "Устгах үед алдаа гарлаа");
+    }
   };
 
   return (
-    <div className="min-h-screen p-6 bg-gray-100">
+    <div className="min-h-screen p-4 sm:p-6">
       <div className="mx-auto max-w-7xl">
 
-        <div className="p-8 mb-8 bg-white shadow rounded-xl">
+        <div className="card mb-8 p-6 sm:p-8">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <h1 className="text-2xl font-bold">
               Барааны жагсаалт
@@ -84,36 +91,51 @@ export default function Home({
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => router.push("/add-product")}
-                className="px-4 py-2.5 text-white transition bg-black rounded-xl hover:bg-gray-800"
+                className="btn btn-primary"
               >
                 + Бараа нэмэх
               </button>
 
               <button
                 onClick={() => router.push("/cart")}
-                className="px-4 py-2.5 transition bg-gray-200 rounded-xl hover:bg-gray-300"
+                className="btn btn-secondary"
               >
                 Сагс ({totalItems})
               </button>
 
               <button
+                onClick={() => router.push("/account")}
+                className="btn btn-secondary"
+              >
+                Профайл
+              </button>
+
+              {user?.role === "admin" && (
+                <button
+                  onClick={() => router.push("/admin")}
+                  className="btn btn-secondary"
+                >
+                  Admin
+                </button>
+              )}
+
+              <button
                 onClick={async () => {
                   try {
-                    await fetch(`${CLIENT_API_BASE_URL}/logout`, {
+                    await fetch(`${API_BASE_URL}/logout`, {
                       method: "POST",
                       credentials: "include",
                     });
                   } catch {
                     // ignore
                   } finally {
-                    dispatch(clearCart());
                     dispatch(resetCart());
                     dispatch(logout());
                     router.push("/login");
                   }
                 }}
-                className="px-4 py-2.5 transition bg-gray-200 rounded-xl hover:bg-gray-300">
-                Logout
+                className="btn btn-secondary">
+                Гарах
               </button>
             </div>
           </div>
@@ -132,7 +154,8 @@ export default function Home({
               onClick={() =>
                 router.push(`/products/${product.id}`)
               }
-              className="overflow-hidden transition bg-white border cursor-pointer rounded-xl hover:shadow">
+              className="card cursor-pointer overflow-hidden transition hover:shadow-md"
+            >
               <div className="h-48 overflow-hidden bg-gray-200">
                 {product.image_url ? (
                   <img
@@ -148,6 +171,13 @@ export default function Home({
               </div>
 
               <div className="p-4">
+                <p className="text-xs text-gray-500">
+                  Дэлгүүр:{" "}
+                  <span className="font-medium text-gray-700">
+                    {product.store_name || "—"}
+                  </span>
+                </p>
+
                 <h3 className="mb-2 text-lg font-semibold">
                   {product.name}
                 </h3>
@@ -157,28 +187,51 @@ export default function Home({
                 </p>
 
                 <div className="flex gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dispatch(addToCart(product));
-                    }}
-                    className="flex-1 px-3 py-2 text-sm text-white transition bg-black rounded-xl hover:bg-gray-800"
-                  >
-                    Сагсанд нэмэх
-                  </button>
+                  <div className="grid flex-1 gap-2">
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(
+                            setCheckoutItems({
+                              source: "direct",
+                              items: [
+                                { ...product, qty: 1 },
+                              ],
+                            })
+                          );
+                          router.push("/payment");
+                        }}
+                        className="btn btn-primary px-3 py-2"
+                      >
+                        Шууд авах
+                      </button>
 
-                  {Number(product.user_id) ===
-                    Number(user?.id) && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteProduct(product.id);
-                      }}
-                      className="px-3 py-2 text-sm text-white transition bg-red-600 rounded-xl hover:bg-red-700"
-                    >
-                      Устгах
-                    </button>
-                  )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(addToCart(product));
+                        }}
+                        className="btn btn-secondary px-3 py-2"
+                      >
+                        Сагсанд нэмэх
+                      </button>
+                    </div>
+
+                    {(Number(product.user_id) ===
+                      Number(user?.id) ||
+                      user?.role === "admin") && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteProduct(product.id);
+                        }}
+                        className="btn btn-danger px-3 py-2"
+                      >
+                        Устгах
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

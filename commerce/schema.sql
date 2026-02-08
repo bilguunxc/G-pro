@@ -1,9 +1,22 @@
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
+  birth_date DATE NOT NULL,
+  store_name TEXT,
+  store_address TEXT,
+  role TEXT NOT NULL DEFAULT 'user',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS birth_date DATE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS store_name TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS store_address TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user';
+CREATE UNIQUE INDEX IF NOT EXISTS users_username_key ON users (username);
 
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,

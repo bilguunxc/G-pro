@@ -1,5 +1,10 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setPaymentMethod, setPaymentPaid, clearCheckout } from "../store/checkoutSlice";
+import {
+  setPaymentMethod,
+  setPaymentPaid,
+  clearCheckout,
+} from "../store/checkoutSlice";
 import { clearCart } from "../store/cartSlice";
 import { useRouter } from "next/router";
 
@@ -9,13 +14,15 @@ const API_BASE_URL =
 export default function PaymentPending() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { orderId, totalPrice, status, paymentMethod } = useSelector((state) => state.checkout);
+  const { orderId, totalPrice, status, paymentMethod, source } = useSelector((state) => state.checkout);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
 
   if (!orderId || status !== "pending") {
     return (
-      <div className="flex justify-center min-h-screen p-6 bg-gray-100">
-        <div className="w-full max-w-3xl p-8 space-y-4 text-center bg-white shadow rounded-xl">
+      <div className="flex justify-center min-h-screen p-4 sm:p-6">
+        <div className="card w-full max-w-3xl space-y-4 p-6 text-center sm:p-8">
           <p className="text-gray-600">
             Идэвхтэй төлбөр алга
           </p>
@@ -23,7 +30,7 @@ export default function PaymentPending() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="w-full py-3 transition bg-gray-200 rounded-xl hover:bg-gray-300"
+            className="btn btn-secondary w-full py-3"
           >
             Нүүр хуудас
           </button>
@@ -34,6 +41,8 @@ export default function PaymentPending() {
 
   const handleConfirmPayment = async () => {
     try {
+      setError("");
+      setLoading(true);
       const res = await fetch(`${API_BASE_URL}/payment-pending`, {
         method: "POST",
         headers: {
@@ -49,23 +58,27 @@ export default function PaymentPending() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Төлбөр баталгаажуулж чадсангүй");
+        setError(data?.message || "Төлбөр баталгаажуулж чадсангүй");
         return;
       }
 
       dispatch(setPaymentPaid());
-      dispatch(clearCart());
+      if (source === "cart") {
+        dispatch(clearCart());
+      }
       dispatch(clearCheckout());
       alert("Төлбөр амжилттай хийгдлээ");
       router.push("/");
     } catch {
-      alert("Сервертэй холбогдож чадсангүй");
+      setError("Сервертэй холбогдож чадсангүй");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center min-h-screen p-6 bg-gray-100">
-      <div className="w-full max-w-3xl p-8 space-y-6 bg-white shadow rounded-xl">
+    <div className="flex justify-center min-h-screen p-4 sm:p-6">
+      <div className="card w-full max-w-3xl space-y-6 p-6 sm:p-8">
         <h1 className="text-xl font-bold text-center">
           Төлбөр баталгаажуулах
         </h1>
@@ -80,18 +93,24 @@ export default function PaymentPending() {
               Нийт төлөх дүн
             </p>
             <p className="text-2xl font-bold">
-              {totalPrice.toLocaleString()} ₮
+              {Number(totalPrice).toLocaleString()} ₮
             </p>
           </div>
         </div>
 
+        {error && (
+          <div className="p-4 text-red-700 bg-red-100 border border-red-200 rounded-xl">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-3">
           <button
             onClick={() => dispatch(setPaymentMethod("transfer"))}
-            className={`w-full py-3 transition border rounded-xl ${
+            className={`btn w-full border py-3 ${
               paymentMethod === "transfer"
-                ? "bg-black text-white border-black"
-                : "hover:bg-gray-50"
+                ? "btn-primary border-black"
+                : "bg-white border-gray-300 hover:bg-gray-50"
             }`}
           >
             Шилжүүлгээр төлөх
@@ -99,10 +118,10 @@ export default function PaymentPending() {
 
           <button
             onClick={() => dispatch(setPaymentMethod("qpay"))}
-            className={`w-full py-3 transition border rounded-xl ${
+            className={`btn w-full border py-3 ${
               paymentMethod === "qpay"
-                ? "bg-black text-white border-black"
-                : "hover:bg-gray-50"
+                ? "btn-primary border-black"
+                : "bg-white border-gray-300 hover:bg-gray-50"
             }`}
           >
             QPay
@@ -114,7 +133,7 @@ export default function PaymentPending() {
         <div className="p-4 space-y-1 border rounded-lg bg-gray-50">
           <p>
             Төлөх дүн:{" "}
-            <strong>{totalPrice.toLocaleString()} ₮</strong>
+            <strong>{Number(totalPrice).toLocaleString()} ₮</strong>
           </p>
           <p>
             Гүйлгээний утга:{" "}
@@ -133,7 +152,7 @@ export default function PaymentPending() {
           </p>
           <p>
             Мөнгөн дүн:{" "}
-            <strong>{totalPrice.toLocaleString()} ₮</strong>
+            <strong>{Number(totalPrice).toLocaleString()} ₮</strong>
           </p>
           <p>
             Гүйлгээний утга:{" "}
@@ -146,16 +165,17 @@ export default function PaymentPending() {
           {paymentMethod && (
             <button
               onClick={handleConfirmPayment}
-              className="w-full py-3 text-white transition bg-black rounded-xl hover:bg-gray-800"
+              disabled={loading}
+              className="btn btn-primary w-full py-3"
             >
-              Төлсөн
+              {loading ? "Шалгаж байна..." : "Төлсөн"}
             </button>
           )}
 
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="w-full py-3 transition bg-gray-200 rounded-xl hover:bg-gray-300"
+            className="btn btn-secondary w-full py-3"
           >
             Нүүр хуудас
           </button>

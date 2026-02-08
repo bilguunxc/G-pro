@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    background:
+      radial-gradient(1200px circle at 50% -200px, rgba(0, 0, 0, 0.06), transparent 60%),
+      radial-gradient(900px circle at 100% 0, rgba(0, 0, 0, 0.04), transparent 55%),
+      linear-gradient(#ffffff, #f6f7fb);
+    @apply text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-gray-200/60 bg-white/80 shadow-sm backdrop-blur;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply bg-black text-white hover:bg-gray-800;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-black/10;
+  }
+
+  .textarea {
+    @apply w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-black/10;
+  }
+
+  .select {
+    @apply w-full rounded-xl border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-black/10;
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-medium text-gray-700;
+  }
+}

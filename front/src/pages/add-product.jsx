@@ -1,8 +1,15 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 
 export default function AddProduct() {
   const router = useRouter();
+  const user = useSelector((state) => state.auth.user);
+  const storeName =
+    user?.store_name || user?.username || "";
+  const storeAddress =
+    user?.store_address || "";
+  const hasStoreAddress = storeAddress.trim().length > 0;
 
   const [form, setForm] = useState({
     productName: "",
@@ -24,6 +31,11 @@ export default function AddProduct() {
 
   const submit = async (e) => {
     e.preventDefault();
+
+    if (!hasStoreAddress) {
+      setError("Эхлээд Профайл хэсгээс дэлгүүрийн хаягаа бүртгэнэ үү");
+      return;
+    }
 
     if (!form.productName || !form.price) {
       setError("Нэр болон үнийг бөглөнө үү");
@@ -62,17 +74,40 @@ export default function AddProduct() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen p-4 sm:p-6">
       <form
         onSubmit={submit}
-        className="w-full max-w-md p-8 space-y-4 bg-white shadow rounded-xl"
+        className="card w-full max-w-md p-6 space-y-4 sm:p-8"
       >
         <h1 className="text-xl font-bold text-center">
           Бараа нэмэх
         </h1>
 
+        <div className="p-4 border rounded-xl bg-gray-50">
+          <p className="text-sm text-gray-600">
+            Дэлгүүр
+          </p>
+          <p className="font-semibold">
+            {storeName || "—"}
+          </p>
+          <p className="mt-1 text-sm text-gray-600 whitespace-pre-line">
+            {storeAddress
+              ? storeAddress
+              : "Профайл хэсгээс дэлгүүрийн хаягаа оруулна уу"}
+          </p>
+          {!hasStoreAddress && (
+            <button
+              type="button"
+              onClick={() => router.push("/account")}
+              className="btn btn-primary mt-3 w-full"
+            >
+              Профайл руу очих
+            </button>
+          )}
+        </div>
+
         {error && (
-          <div className="p-3 text-red-600 bg-red-100 rounded">
+          <div className="p-4 text-red-700 bg-red-100 border border-red-200 rounded-xl">
             {error}
           </div>
         )}
@@ -81,8 +116,10 @@ export default function AddProduct() {
           name="productName"
           value={form.productName}
           onChange={handleChange}
-          className="w-full px-4 py-3 border rounded-lg"
+          className="input"
           placeholder="Барааны нэр"
+          required
+          maxLength={80}
         />
 
         <input
@@ -90,29 +127,33 @@ export default function AddProduct() {
           type="number"
           value={form.price}
           onChange={handleChange}
-          className="w-full px-4 py-3 border rounded-lg"
+          className="input"
           placeholder="Үнэ"
+          required
+          min={0}
         />
 
         <textarea
           name="description"
           value={form.description}
           onChange={handleChange}
-          className="w-full px-4 py-3 border rounded-lg"
+          className="textarea"
           placeholder="Тайлбар"
+          rows={4}
+          maxLength={500}
         />
 
         <input
           name="imageUrl"
           value={form.imageUrl}
           onChange={handleChange}
-          className="w-full px-4 py-3 border rounded-lg"
+          className="input"
           placeholder="Зургийн URL"
         />
 
         <button
           disabled={loading}
-          className="w-full py-3 text-white transition bg-black rounded-xl hover:bg-gray-800 disabled:opacity-60"
+          className="btn btn-primary w-full"
         >
           {loading ? "Нэмж байна..." : "Нэмэх"}
         </button>

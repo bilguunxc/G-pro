@@ -13,7 +13,7 @@ export default function Login() {
   const router = useRouter();
 
   const [form, setForm] = useState({
-    email: "",
+    loginId: "",
     password: "",
   });
   const [error, setError] = useState("");
@@ -51,48 +51,55 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded shadow">
+    <div className="flex items-center justify-center min-h-screen p-4 sm:p-6">
+      <div className="card w-full max-w-md p-6 sm:p-8">
         <h1 className="mb-6 text-2xl font-bold text-center">
           Нэвтрэх
         </h1>
 
         {error && (
-          <div className="p-3 mb-4 text-red-600 bg-red-100 rounded">
+          <div className="p-4 mb-4 text-red-700 bg-red-100 border border-red-200 rounded-xl">
             {error}
           </div>
         )}
 
         <form onSubmit={submit} className="space-y-4">
-          <input
-            className="w-full p-3 border rounded"
-            placeholder="Email"
-            type="email"
-            autoComplete="email"
-            value={form.email}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                email: e.target.value,
-              })}
-          />
+          <div>
+            <label className="label">Имэйл эсвэл Username</label>
+            <input
+              className="input"
+              placeholder="Ж: bilguun_01 эсвэл email@example.com"
+              autoComplete="username"
+              value={form.loginId}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  loginId: e.target.value,
+                })}
+              required
+            />
+          </div>
 
-          <input
-            type="password"
-            className="w-full p-3 border rounded"
-            placeholder="Password"
-            autoComplete="current-password"
-            value={form.password}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                password: e.target.value,
-              })}
-          />
+          <div>
+            <label className="label">Нууц үг</label>
+            <input
+              type="password"
+              className="input"
+              placeholder="Нууц үгээ оруулна уу"
+              autoComplete="current-password"
+              value={form.password}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  password: e.target.value,
+                })}
+              required
+            />
+          </div>
 
           <button
             disabled={loading}
-            className="w-full py-2 text-white bg-black rounded"
+            className="btn btn-primary w-full"
           >
             {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
           </button>
@@ -100,7 +107,10 @@ export default function Login() {
 
         <p className="mt-4 text-sm text-center">
           Бүртгэлгүй юу?{" "}
-          <Link href="/signup" className="underline">
+          <Link
+            href="/signup"
+            className="font-medium text-black hover:underline"
+          >
             Бүртгүүлэх
           </Link>
         </p>
