@@ -123,7 +123,7 @@ export default function Signup() {
               minLength={3}
               maxLength={20}
               autoComplete="username"
-              placeholder="Ж: bilguun_01"
+              placeholder="Ж: bataa_01"
             />
           </div>
 
