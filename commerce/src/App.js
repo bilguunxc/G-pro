@@ -15,7 +15,7 @@ if (!JWT_SECRET && isProd) {
 }
 
 
-const SECRET = JWT_SECRET || "2aba446c-1c9b-4c8e-9a7b-8c9f0e5d6a7b";
+const SECRET = JWT_SECRET || "a7dd113c0fdfa43af5485b05d8d92a2ece60826056fbb4b9c1f6085bb3806cdea294601acc1cbe46bb54c799e7834a00";
 
 const AUTH_COOKIE_NAME =
   (process.env.AUTH_COOKIE_NAME || "").trim() || "token";
