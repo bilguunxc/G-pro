@@ -68,7 +68,7 @@ export default function Login() {
             <label className="label">Имэйл эсвэл Username</label>
             <input
               className="input"
-              placeholder="Ж: bilguun_01 эсвэл email@example.com"
+              placeholder="Ж: bataa_01 эсвэл email@example.com"
               autoComplete="username"
               value={form.loginId}
               onChange={(e) =>
